@@ -1,0 +1,393 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus GPT - AI College Assistant</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23facc15'%3E%3Cpath d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80');
+            background-color: #0c1427; /* Fallback color */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .main-container {
+            background: rgba(17, 24, 39, 0.9); /* Dark Navy Blue */
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.5s ease-in-out;
+        }
+        .view {
+            transition: opacity 0.4s ease-in-out;
+        }
+        .view.hidden {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+        }
+        .primary-btn {
+            background: linear-gradient(90deg, #facc15, #eab308); /* Gold/Yellow Gradient */
+            color: #1e293b; /* Dark text for contrast */
+            transition: all 0.3s ease;
+        }
+        .primary-btn:hover {
+            box-shadow: 0 0 25px rgba(250, 204, 21, 0.6);
+            transform: translateY(-3px);
+        }
+        .secondary-btn {
+            background: #1e40af; /* Deep Blue */
+            color: #e0e7ff;
+            transition: all 0.3s ease;
+        }
+        .secondary-btn:hover {
+            background: #1d4ed8; 
+        }
+        .chat-bubble-user { 
+            background: linear-gradient(90deg, #facc15, #eab308);
+            color: #1e293b; 
+            border-radius: 1.5rem 1.5rem 0.25rem 1.5rem; 
+        }
+        .chat-bubble-bot { 
+            background-color: #334155; /* Slate Gray */
+            color: #f1f5f9;
+            border-radius: 1.5rem 1.5rem 1.5rem 0.25rem; 
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <div id="main-container" class="main-container w-full max-w-md rounded-2xl shadow-2xl relative overflow-hidden">
+        <div id="content-wrapper" class="p-8">
+            <!-- Role Selection -->
+            <div id="role-selection" class="view text-center">
+                <div class="flex items-center justify-center gap-3 mb-4 text-white">
+                    <svg class="w-12 h-12 text-yellow-400" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+                    <h2 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">
+                        Campus GPT
+                    </h2>
+                </div>
+                <p class="text-gray-300 mb-8">Select your role to begin</p>
+                <div class="space-y-4">
+                    <button onclick="showLogin('student')" class="w-full primary-btn py-3 rounded-lg font-semibold">I am a Student</button>
+                    <button onclick="showLogin('teacher')" class="w-full primary-btn py-3 rounded-lg font-semibold">I am a Teacher</button>
+                    <button onclick="showLogin('admin')" class="w-full primary-btn py-3 rounded-lg font-semibold">I am an Admin</button>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form" class="view hidden">
+                <h2 id="login-title" class="text-3xl font-bold mb-6 text-center text-white">Login</h2>
+                <form id="login-form-element">
+                    <input type="hidden" id="login-role">
+                    <div class="mb-4"><label class="block text-gray-300 text-sm font-medium mb-2">Email</label><input type="email" id="login-email" class="w-full px-4 py-2 border border-blue-800 rounded-lg bg-blue-900/50 text-white focus:ring-yellow-500 focus:border-yellow-500" required></div>
+                    <div class="mb-6"><label class="block text-gray-300 text-sm font-medium mb-2">Password</label><input type="password" id="login-password" class="w-full px-4 py-2 border border-blue-800 rounded-lg bg-blue-900/50 text-white focus:ring-yellow-500 focus:border-yellow-500" required></div>
+                    <button type="submit" class="w-full primary-btn py-2 rounded-lg font-semibold transition">Login</button>
+                </form>
+                <p id="login-error" class="text-red-400 text-sm mt-4 text-center"></p>
+                <div class="text-center mt-6 text-gray-400">
+                    <a href="#" id="back-to-roles" class="hover:underline">Back to role selection</a>
+                    <span id="show-signup-span"> | Don't have an account? <a href="#" id="show-signup" class="hover:underline text-yellow-400">Sign Up</a></span>
+                </div>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signup-form" class="view hidden">
+                <h2 class="text-3xl font-bold mb-6 text-center text-white">Create Student Account</h2>
+                <form id="signup-form-element">
+                    <div class="mb-4"><label class="block text-gray-300 text-sm mb-2">Full Name</label><input type="text" id="signup-name" class="w-full p-2 border border-blue-800 rounded bg-blue-900/50 text-white" required></div>
+                    <div class="mb-4"><label class="block text-gray-300 text-sm mb-2">Email</label><input type="email" id="signup-email" class="w-full p-2 border border-blue-800 rounded bg-blue-900/50 text-white" required></div>
+                    <div class="mb-4"><label class="block text-gray-300 text-sm mb-2">Password</label><input type="password" id="signup-password" class="w-full p-2 border border-blue-800 rounded bg-blue-900/50 text-white" required></div>
+                    <div class="mb-4"><label class="block text-gray-300 text-sm mb-2">Program (e.g., CSE)</label><input type="text" id="signup-program" class="w-full p-2 border border-blue-800 rounded bg-blue-900/50 text-white" required></div>
+                    <div class="mb-6"><label class="block text-gray-300 text-sm mb-2">Section (e.g., A)</label><input type="text" id="signup-section" class="w-full p-2 border border-blue-800 rounded bg-blue-900/50 text-white" required></div>
+                    <button type="submit" class="w-full primary-btn py-2 rounded-lg font-semibold transition">Sign Up</button>
+                </form>
+                <p id="signup-error" class="text-red-400 text-sm mt-4 text-center"></p>
+                <p class="text-center text-gray-400 mt-6">Already have an account? <a href="#" id="show-login" class="hover:underline text-yellow-400">Login</a></p>
+            </div>
+        </div>
+
+        <!-- Student Chat -->
+        <div id="student-dashboard" class="view hidden w-full h-full flex flex-col">
+             <header class="bg-blue-900/70 p-4 flex justify-between items-center border-b border-blue-800 flex-shrink-0"><h1 class="text-xl font-bold text-white">Campus GPT</h1><button onclick="logout()" class="text-sm font-medium hover:underline text-yellow-400">Logout</button></header>
+             <main id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4"></main>
+             <footer class="p-4 bg-blue-800/50 border-t border-blue-700 flex-shrink-0"><form id="chat-form" class="flex gap-3"><input id="chat-input" placeholder="Ask me anything..." class="w-full px-4 py-3 border border-blue-600 rounded-full bg-blue-900/50 text-white focus:ring-yellow-500 focus:border-yellow-500" autocomplete="off"><button type="submit" class="primary-btn rounded-full p-3 transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button></form></footer>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-dashboard" class="view hidden w-full h-full overflow-y-auto">
+            <header class="flex justify-between items-center pb-4 border-b border-blue-800 mb-6"><h1 class="text-3xl font-bold text-white">Admin Dashboard</h1><button onclick="logout()" class="text-sm font-medium text-yellow-400 hover:underline">Logout</button></header>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-blue-800"><h3 class="font-bold text-lg text-yellow-400 mb-3">Manage Teachers</h3><form id="form-teachers" class="space-y-2"><input name="name" placeholder="Teacher Name" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="email" type="email" placeholder="Teacher Email" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="password" placeholder="Password" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><button type="submit" class="secondary-btn text-white w-full px-4 py-2 rounded font-semibold">Add Teacher</button></form><div id="list-teachers" class="mt-3 text-sm space-y-2"></div></div>
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-blue-800"><h3 class="font-bold text-lg text-yellow-400 mb-3">Manage Timetables</h3><form id="form-timetables" class="space-y-2"><input name="program" placeholder="Program" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="section" placeholder="Section" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="course" placeholder="Course" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="day" placeholder="Day" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="time" placeholder="Time" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="room" placeholder="Room" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><button type="submit" class="secondary-btn text-white w-full px-4 py-2 rounded font-semibold">Add</button></form><div id="list-timetables" class="mt-3 text-sm space-y-2"></div></div>
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-blue-800"><h3 class="font-bold text-lg text-yellow-400 mb-3">Exam Schedules</h3><form id="form-schedules" class="space-y-2"><input name="subject" placeholder="Subject" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="date" placeholder="Date" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="details" placeholder="Details" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white"><button type="submit" class="secondary-btn text-white w-full px-4 py-2 rounded font-semibold">Add</button></form><div id="list-schedules" class="mt-3 text-sm space-y-2"></div></div>
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-blue-800"><h3 class="font-bold text-lg text-yellow-400 mb-3">Manage Events</h3><form id="form-events" class="space-y-2"><input name="title" placeholder="Event Title" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="date" placeholder="Date" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="description" placeholder="Description" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><button type="submit" class="secondary-btn text-white w-full px-4 py-2 rounded font-semibold">Add</button></form><div id="list-events" class="mt-3 text-sm space-y-2"></div></div>
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-blue-800"><h3 class="font-bold text-lg text-yellow-400 mb-3">Faculty Contacts</h3><form id="form-contacts" class="space-y-2"><input name="name" placeholder="Name" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="department" placeholder="Department" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><input name="email" type="email" placeholder="Email" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required><button type="submit" class="secondary-btn text-white w-full px-4 py-2 rounded font-semibold">Add</button></form><div id="list-contacts" class="mt-3 text-sm space-y-2"></div></div>
+            </div>
+        </div>
+
+        <!-- Teacher Dashboard -->
+        <div id="teacher-dashboard" class="view hidden w-full h-full">
+            <header class="flex justify-between items-center pb-4 border-b border-blue-800 mb-6"><h1 class="text-2xl font-bold text-white">Teacher Dashboard</h1><button onclick="logout()" class="text-sm font-medium text-yellow-400 hover:underline">Logout</button></header>
+            <div class="bg-slate-800/50 p-6 rounded-lg border border-blue-800">
+                <h3 class="font-bold text-lg text-yellow-400 mb-4">Upload Course Notes</h3>
+                <form id="form-notes" class="space-y-4">
+                    <input name="course_name" placeholder="Course Name (e.g., Physics 101)" class="w-full p-2 border border-blue-700 rounded bg-blue-900/50 text-white" required>
+                    <input name="note-pdf" type="file" accept=".pdf" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-yellow-900/50 file:text-yellow-300 hover:file:bg-yellow-900" required>
+                    <button type="submit" class="w-full secondary-btn text-white px-5 py-2 rounded-lg font-semibold">Upload PDF</button>
+                </form>
+                <h3 class="font-bold text-lg text-yellow-400 mt-8 mb-3">Your Uploaded Notes</h3>
+                <div id="list-notes" class="mt-2 text-sm space-y-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let currentUser = null;
+
+        const mainContainer = document.getElementById('main-container');
+        const contentWrapper = document.getElementById('content-wrapper');
+        const views = document.querySelectorAll('.view');
+        
+        let currentView = 'role-selection';
+
+        function switchView(viewId) {
+            const targetView = document.getElementById(viewId);
+            if (!targetView || currentView === viewId) return;
+            views.forEach(v => v.classList.add('hidden'));
+            targetView.classList.remove('hidden');
+            currentView = viewId;
+        }
+
+        function showLogin(role) {
+            document.getElementById('login-role').value = role;
+            document.getElementById('login-title').textContent = `${role.charAt(0).toUpperCase() + role.slice(1)} Login`;
+            document.getElementById('show-signup-span').style.display = (role === 'student') ? 'inline' : 'none';
+            switchView('login-form');
+        }
+        
+        document.getElementById('show-signup').addEventListener('click', (e) => { e.preventDefault(); switchView('signup-form'); });
+        document.getElementById('show-login').addEventListener('click', (e) => { e.preventDefault(); showLogin('student'); });
+        document.getElementById('back-to-roles').addEventListener('click', (e) => { e.preventDefault(); switchView('role-selection'); });
+
+        function logout() {
+            currentUser = null;
+            sessionStorage.removeItem('campusUser');
+            mainContainer.classList.remove('max-w-7xl', 'max-w-2xl', 'md:max-h-[700px]');
+            mainContainer.classList.add('max-w-md');
+            contentWrapper.classList.add('p-8');
+            document.getElementById('chat-messages').innerHTML = '';
+            ['list-teachers', 'list-timetables', 'list-schedules', 'list-events', 'list-contacts', 'list-notes'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.innerHTML = '';
+            });
+            document.querySelectorAll('form').forEach(form => form.reset());
+            document.querySelectorAll('[id$="-error"]').forEach(el => el.textContent = '');
+            switchView('role-selection');
+        }
+
+        document.getElementById('login-form-element').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                email: e.target.querySelector('#login-email').value,
+                password: e.target.querySelector('#login-password').value,
+                role: e.target.querySelector('#login-role').value,
+            };
+            try {
+                const res = await fetch(`${API_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.message);
+                currentUser = result.user;
+                sessionStorage.setItem('campusUser', JSON.stringify(currentUser));
+                navigateToDashboard();
+            } catch (err) {
+                document.getElementById('login-error').textContent = err.message;
+            }
+        });
+        
+        document.getElementById('signup-form-element').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                name: e.target.querySelector('#signup-name').value,
+                email: e.target.querySelector('#signup-email').value,
+                password: e.target.querySelector('#signup-password').value,
+                program: e.target.querySelector('#signup-program').value,
+                section: e.target.querySelector('#signup-section').value,
+            };
+            try {
+                const res = await fetch(`${API_URL}/signup`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.message);
+                alert('Sign up successful! Please log in.');
+                showLogin('student');
+            } catch (err) {
+                document.getElementById('signup-error').textContent = err.message;
+            }
+        });
+        
+        function resizeContainer(newClasses) {
+            mainContainer.className = `main-container rounded-2xl shadow-2xl relative overflow-hidden w-full ${newClasses}`;
+        }
+
+        function navigateToDashboard() {
+            if (!currentUser) return;
+            contentWrapper.classList.remove('p-8');
+            switch(currentUser.role) {
+                case 'student': 
+                    resizeContainer('max-w-2xl md:max-h-[700px]');
+                    switchView('student-dashboard'); 
+                    initChat(); 
+                    break;
+                case 'admin': 
+                    resizeContainer('max-w-7xl');
+                    switchView('admin-dashboard'); 
+                    loadAdminData(); 
+                    break;
+                case 'teacher': 
+                    resizeContainer('max-w-2xl');
+                    switchView('teacher-dashboard'); 
+                    loadTeacherNotes(); 
+                    break;
+            }
+        }
+        
+        const chatMessages = document.getElementById('chat-messages');
+        
+        function initChat() {
+            appendChatMessage('Hello! How can I help you today?', 'bot');
+        }
+        
+        function appendChatMessage(message, sender) {
+             const wrapper = document.createElement('div');
+             const urlRegex = /(\/uploads\/[^\s]+)/g;
+             const formattedMessage = message.replace(urlRegex, `<a href="${API_URL}$1" target="_blank" class="text-yellow-400 underline">Download Note</a>`);
+
+            if (sender === 'user') {
+                wrapper.className = 'flex justify-end';
+                wrapper.innerHTML = `<div class="chat-bubble-user p-4 max-w-xs md:max-w-md"><p>${message}</p></div>`;
+            } else {
+                wrapper.className = 'flex items-start gap-3';
+                wrapper.innerHTML = `<div class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center font-bold flex-shrink-0 text-white">AI</div><div class="chat-bubble-bot p-4 max-w-xs md:max-w-md"><p>${formattedMessage.replace(/\n/g, '<br>')}</p></div>`;
+            }
+            chatMessages.appendChild(wrapper);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        document.getElementById('chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            appendChatMessage(message, 'user');
+            input.value = '';
+            
+            try {
+                const res = await fetch(`${API_URL}/ask`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ query: message, program: currentUser.program, section: currentUser.section }) 
+                });
+                const data = await res.json();
+                appendChatMessage(data.reply, 'bot');
+            } catch (err) {
+                appendChatMessage('Sorry, there was a connection error.', 'bot');
+            }
+        });
+        
+        const adminSections = ['teachers', 'timetables', 'schedules', 'events', 'contacts'];
+        
+        async function loadAdminData() {
+            for (const section of adminSections) {
+                const res = await fetch(`${API_URL}/api/${section}`);
+                const data = await res.json();
+                renderAdminList(section, data);
+            }
+        }
+
+        function renderAdminList(section, data) {
+            const container = document.getElementById(`list-${section}`);
+            container.innerHTML = '';
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-slate-700/50 p-2 rounded';
+                const text = (section === 'teachers') 
+                    ? `${item.name} - ${item.email}`
+                    : Object.values(item).filter(v => v !== item.id).join(' - ');
+                div.innerHTML = `<span class="text-sm text-gray-300 truncate pr-2">${text}</span><button onclick="deleteItem('${section}', ${item.id})" class="text-red-400 hover:text-red-300 font-bold">X</button>`;
+                container.appendChild(div);
+            });
+        }
+        
+        adminSections.forEach(section => {
+            const form = document.getElementById(`form-${section}`);
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const data = Object.fromEntries(new FormData(e.target).entries());
+                    try {
+                        const res = await fetch(`${API_URL}/api/${section}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                        if (!res.ok) { const errData = await res.json(); throw new Error(errData.message); }
+                        e.target.reset();
+                        loadAdminData();
+                    } catch (err) { alert(`Error: ${err.message}`); }
+                });
+            }
+        });
+
+        document.getElementById('form-notes').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            formData.append('teacher_id', currentUser.id);
+            try {
+                const res = await fetch(`${API_URL}/api/notes`, { method: 'POST', body: formData });
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.message);
+                alert(result.message);
+                e.target.reset();
+                loadTeacherNotes();
+            } catch (err) { alert(`Error: ${err.message}`); }
+        });
+
+        async function loadTeacherNotes() {
+            const res = await fetch(`${API_URL}/api/notes`);
+            const data = await res.json();
+            const container = document.getElementById('list-notes');
+            container.innerHTML = '';
+            data.filter(note => note.teacher_id === currentUser.id).forEach(note => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-slate-700/50 p-2 rounded';
+                div.innerHTML = `<span>${note.course_name}: ${note.original_filename}</span><button onclick="deleteItem('notes', ${note.id})" class="text-red-400 hover:underline">X</button>`;
+                container.appendChild(div);
+d            });
+        }
+
+        async function deleteItem(section, id) {
+            if (confirm('Are you sure?')) {
+                await fetch(`${API_URL}/api/${section}/${id}`, { method: 'DELETE' });
+                if (currentUser.role === 'admin') loadAdminData();
+                if (currentUser.role === 'teacher') loadTeacherNotes();
+            }
+        }
+
+        window.onload = () => {
+            const savedUser = sessionStorage.getItem('campusUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                navigateToDashboard();
+            } else {
+                switchView('role-selection');
+            }
+        };
+    </script>
+</body>
+</html>
+
+
+
+
