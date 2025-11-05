@@ -1,0 +1,21 @@
+{
+  "name": "campus-gpt-backend",
+  "version": "1.0.0",
+  "description": "Backend for the AI College Assistant",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "init-db": "node database.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^2.6.7",
+    "sqlite3": "^5.1.7"
+  }
+}
+
